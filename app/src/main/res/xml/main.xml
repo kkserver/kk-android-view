@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<document>
+    <style><![CDATA[
+        app-button {
+            scale: 1.0;
+        }
+        app-button:selected {
+            scale: 1.2;
+        }
+        app-title {
+            color: #999;
+        }
+        app-title:hover {
+            color: #333;
+        }
+        app-image {
+            opacity: 1.0;
+        }
+        app-image {
+            opacity: 1.0;
+            width: 57dp;
+            height: 57dp;
+            left: auto;
+            right: auto;
+            top: 6dp;
+        }
+        app-image:hover {
+            opacity: 0.6;
+        }
+    ]]></style>
+    <animation name="editing" duration="300" replayCount="999999999" autoreverses="true">
+        <animation-scale fromX="1" fromY="1" toX="0.95" toY="0.95" pivotX="0.5" pivotY="0.5"></animation-scale>
+    </animation>
+    <body layout="flow" background-color="#ffffff" padding="16dp" >
+        <button width="25%" height="96dp" layout="relative" style="app-button" long-action="action.editing">
+            <outlet key="editing" property="animation"></outlet>
+            <foreach key="apps"></foreach>
+            <img style="app-image">
+                <outlet key="icon" property="image"></outlet>
+            </img>
+            <text style="app-title" left="4dp" top="auto" bottom="6dp" width="100%-8dp" height="20dp" font="12dp" text-align="center">
+                <outlet key="label" property="text"></outlet>
+            </text>
+        </button>
+    </body>
+</document>

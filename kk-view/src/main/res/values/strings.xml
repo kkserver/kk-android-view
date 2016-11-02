@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">kk-view</string>
+    <string name="styleSheet"><![CDATA[
+    body {
+        class: cn.kkserver.view.ViewElement;
+    }
+    style {
+        class: cn.kkserver.view.StyleElement;
+    }
+    canvas {
+        class: cn.kkserver.view.CanvasElement;
+    }
+    view {
+        class: cn.kkserver.view.ViewElement;
+    }
+    text {
+        class: cn.kkserver.view.TextElement;
+    }
+    pager {
+        class: cn.kkserver.view.ViewPagerElement;
+    }
+    img {
+        class: cn.kkserver.view.ImageElement;
+    }
+    button {
+        class: cn.kkserver.view.ButtonElement;
+    }
+    script {
+        class: cn.kkserver.view.ScriptElement;
+    }
+    outlet {
+        class: cn.kkserver.view.ScriptElement;
+        type: cn.kkserver.view.Script;
+        name: Outlet;
+    }
+    foreach {
+        class: cn.kkserver.view.ForeachElement;
+        property: object;
+    }
+    animation {
+        class: cn.kkserver.view.AnimationElement$SetElement;
+    }
+    animation-opacity {
+        class: cn.kkserver.view.AnimationElement$OpacityElement;
+    }
+    animation-scale {
+        class: cn.kkserver.view.AnimationElement$ScaleElement;
+    }
+    animation-translate {
+        class: cn.kkserver.view.AnimationElement$TranslateElement;
+    }
+    animation-rotate {
+        class: cn.kkserver.view.AnimationElement$RotateElement;
+    }
+    ]]></string>
+</resources>
