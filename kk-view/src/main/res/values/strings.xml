@@ -2,55 +2,55 @@
     <string name="app_name">kk-view</string>
     <string name="styleSheet"><![CDATA[
     body {
-        class: cn.kkserver.view.ViewElement;
+        class: cn.kkserver.view.element.ViewElement;
     }
     style {
-        class: cn.kkserver.view.StyleElement;
+        class: cn.kkserver.view.element.StyleElement;
     }
     canvas {
-        class: cn.kkserver.view.CanvasElement;
+        class: cn.kkserver.view.element.CanvasElement;
     }
     view {
-        class: cn.kkserver.view.ViewElement;
+        class: cn.kkserver.view.element.ViewElement;
     }
     text {
-        class: cn.kkserver.view.TextElement;
+        class: cn.kkserver.view.element.TextElement;
     }
     pager {
-        class: cn.kkserver.view.ViewPagerElement;
+        class: cn.kkserver.view.element.ViewPagerElement;
     }
     img {
-        class: cn.kkserver.view.ImageElement;
+        class: cn.kkserver.view.element.ImageElement;
     }
     button {
-        class: cn.kkserver.view.ButtonElement;
+        class: cn.kkserver.view.element.ButtonElement;
     }
     script {
-        class: cn.kkserver.view.ScriptElement;
+        class: cn.kkserver.view.element.ScriptElement;
     }
     outlet {
-        class: cn.kkserver.view.ScriptElement;
-        type: cn.kkserver.view.Script;
+        class: cn.kkserver.view.element.ScriptElement;
+        type: cn.kkserver.view.script.Script;
         name: Outlet;
     }
     foreach {
-        class: cn.kkserver.view.ForeachElement;
+        class: cn.kkserver.view.element.ForeachElement;
         property: object;
     }
     animation {
-        class: cn.kkserver.view.AnimationElement$SetElement;
+        class: cn.kkserver.view.element.AnimationElement$SetElement;
     }
     animation-opacity {
-        class: cn.kkserver.view.AnimationElement$OpacityElement;
+        class: cn.kkserver.view.element.AnimationElement$OpacityElement;
     }
     animation-scale {
-        class: cn.kkserver.view.AnimationElement$ScaleElement;
+        class: cn.kkserver.view.element.AnimationElement$ScaleElement;
     }
     animation-translate {
-        class: cn.kkserver.view.AnimationElement$TranslateElement;
+        class: cn.kkserver.view.element.AnimationElement$TranslateElement;
     }
     animation-rotate {
-        class: cn.kkserver.view.AnimationElement$RotateElement;
+        class: cn.kkserver.view.element.AnimationElement$RotateElement;
     }
     ]]></string>
 </resources>

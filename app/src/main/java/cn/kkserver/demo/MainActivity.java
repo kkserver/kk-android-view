@@ -13,13 +13,11 @@ import java.util.TreeMap;
 
 import cn.kkserver.observer.IObserver;
 import cn.kkserver.observer.Observer;
-import cn.kkserver.view.Element;
-import cn.kkserver.view.Event;
-import cn.kkserver.view.EventFunction;
+import cn.kkserver.view.event.Event;
+import cn.kkserver.view.event.EventFunction;
 import cn.kkserver.view.KK;
 import cn.kkserver.view.KKDocumentView;
-import cn.kkserver.view.KKValue;
-import cn.kkserver.view.Style;
+import cn.kkserver.view.value.KKValue;
 
 public class MainActivity extends Activity {
 

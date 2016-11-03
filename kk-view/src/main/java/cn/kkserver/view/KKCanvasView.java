@@ -7,6 +7,8 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
+import cn.kkserver.view.value.KKValue;
+
 /**
  * Created by zhanghailong on 2016/11/1.
  */

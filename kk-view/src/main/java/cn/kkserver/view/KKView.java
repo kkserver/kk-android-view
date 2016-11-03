@@ -5,6 +5,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
+import cn.kkserver.view.value.Rect;
+
 /**
  * Created by zhanghailong on 2016/11/1.
  */

@@ -2,17 +2,21 @@ package cn.kkserver.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
-import java.util.TreeMap;
-
 import cn.kkserver.observer.IObserver;
+import cn.kkserver.view.element.AnimationElement;
+import cn.kkserver.view.element.BodyElement;
+import cn.kkserver.view.element.DocumentElement;
+import cn.kkserver.view.element.Element;
+import cn.kkserver.view.element.Layout;
+import cn.kkserver.view.element.ScriptElement;
+import cn.kkserver.view.element.StyleElement;
+import cn.kkserver.view.style.Style;
+import cn.kkserver.view.value.Size;
 
 /**
  * Created by zhanghailong on 2016/11/2.
@@ -54,67 +58,6 @@ public class KKDocumentView extends KKView {
             layout.layout(_bodyElement,_layoutSize);
         }
         super.onLayout(changed,l,t,r,b);
-    }
-
-    public static class BodyElement extends ViewElement {
-
-        private WeakReference<KKDocumentView> _ref;
-
-        public BodyElement(KKDocumentView view) {
-            super((View) null);
-            _ref = new WeakReference<>(view);
-        }
-
-        @Override
-        public View view() {
-            return _ref != null ? _ref.get() : null;
-        }
-
-        @Override
-        protected Element onCreateCloneElement() {
-            return new BodyElement(_ref != null ? _ref.get() : null);
-        }
-
-    }
-
-    public static class DocumentElement extends Element {
-
-        public final StyleSheet styleSheet;
-        public final Context context;
-
-        public DocumentElement(Context context) {
-            this.context = context;
-            this.styleSheet = new StyleSheet();
-            this.styleSheet.loadCSSContent(context.getResources().getString(R.string.styleSheet));
-        }
-
-        private TreeMap<String,AnimationElement> _animations = new TreeMap<>();
-
-        public Set<String> animationKeys() {
-            return _animations.keySet();
-        }
-
-        public AnimationElement animation(String key) {
-            return _animations.containsKey(key) ? _animations.get(key) : null;
-        }
-
-        public void addStyleElement(StyleElement element) {
-            styleSheet.loadCSSContent(element.get(Style.Text,String.class,""));
-        }
-
-        public void addAnimationElement(AnimationElement element) {
-
-            String name = element.get(Style.Name,String.class);
-
-            if(name != null) {
-                _animations.put(name, element);
-            }
-        }
-
-        @Override
-        protected Element onCreateCloneElement() {
-            return new DocumentElement(context);
-        }
     }
 
     protected void onStartDocument(XmlPullParser parser) {

@@ -38,7 +38,7 @@
             <img style="app-image">
                 <outlet key="icon" property="image"></outlet>
             </img>
-            <text style="app-title" left="4dp" top="auto" bottom="6dp" width="100%-8dp" height="20dp" font="12dp" text-align="center">
+            <text style="app-title" left="4dp" top="auto" bottom="6dp" width="100%-8dp" height="14dp" font="12dp" text-align="center">
                 <outlet key="label" property="text"></outlet>
             </text>
         </button>
