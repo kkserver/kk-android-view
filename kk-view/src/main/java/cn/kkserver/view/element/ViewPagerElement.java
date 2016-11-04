@@ -3,21 +3,30 @@ package cn.kkserver.view.element;
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-
+import cn.kkserver.observer.ArrayIterator;
+import cn.kkserver.observer.IObserver;
+import cn.kkserver.observer.IWithObserver;
+import cn.kkserver.observer.Listener;
+import cn.kkserver.observer.Observer;
+import cn.kkserver.view.KK;
 import cn.kkserver.view.Property;
 import cn.kkserver.view.style.Style;
+import cn.kkserver.view.value.Rect;
+import cn.kkserver.view.value.Size;
 
 /**
  * Created by zhanghailong on 2016/11/1.
  */
 
-public class ViewPagerElement extends ViewElement  {
+public class ViewPagerElement extends ViewElement implements IEditingElement,IObserverElement {
 
     private final ViewPagerElementAdpater _adapter = new ViewPagerElementAdpater(this);
     private boolean _editing;
@@ -29,11 +38,13 @@ public class ViewPagerElement extends ViewElement  {
     public ViewPagerElement(Context context) {
         super(new ViewPager(context));
         viewPager().setAdapter(_adapter);
+        set(Style.Layout,new PagerLayout());
     }
 
     public ViewPagerElement(ViewPager view) {
         super(view);
         view.setAdapter(_adapter);
+        set(Style.Layout,new PagerLayout());
     }
 
     @Override
@@ -42,14 +53,17 @@ public class ViewPagerElement extends ViewElement  {
     }
 
 
+    @Override
     public boolean isEditing() {
         return _editing;
     }
 
+    @Override
     public void beginEditing() {
         _editing = true;
     }
 
+    @Override
     public void endEditing() {
         if(_editing) {
             _editing = false;
@@ -73,31 +87,113 @@ public class ViewPagerElement extends ViewElement  {
         super.onRemoveChildren(element);
     }
 
-    public PageElement addPageElement(View view,String reuse) {
-        PageElement page = new PageElement(view);
-        page.set(Style.Reuse,reuse);
-        append(page);
-        return page;
+    @Override
+    public void obtainObserver(IObserver observer) {
+
+        String key = get(Style.Key,String.class);
+        IObserver obs = observer;
+
+        while(key != null && key.startsWith("^") && obs != null) {
+            key = key.substring(1);
+            obs = obs.parent();
+        }
+
+        if(key != null && obs != null) {
+
+            final String[] keys = Observer.keys(key);
+
+            onValueChanged(obs,keys,obs.get(keys));
+
+            obs.on(keys, new Listener<ViewPagerElement>() {
+                @Override
+                public void onChanged(IObserver observer, String[] changedKeys, ViewPagerElement weakObject) {
+                    if(weakObject != null) {
+                        weakObject.onValueChanged(observer,keys,observer.get(keys));
+                    }
+                }
+            },this);
+
+        }
     }
 
-    public RowElement addRowElement(String reuse) {
+    protected void onValueChanged(IObserver observer,String[] baseKeys,Object value) {
+
+        Iterator<Object> i = new ArrayIterator<>(value);
+
+        beginEditing();
+
+        Element p = firstChild();
+
+        while(p!= null && ! (p instanceof RowElement)) {
+            p = p.nextSibling();
+        }
+
+        int idx = 0;
+
+        while(i.hasNext()) {
+
+            i.next();
+
+            if(p == null) {
+                p = new RowElement();
+                append(p);
+            }
+
+            p.set(Style.Observer,observer);
+            p.set(Style.Key, Observer.joinString(Observer.join(baseKeys,new String[]{String.valueOf(idx)})));
+
+            idx ++;
+
+            p = p.nextSibling();
+            while(p!= null && ! (p instanceof RowElement)) {
+                p = p.nextSibling();
+            }
+        }
+
+        while(p != null) {
+            if(p instanceof RowElement) {
+                Element n = p.nextSibling();
+                p.remove();
+                p = n;
+            }
+            else {
+                p = p.nextSibling();
+            }
+        }
+
+        endEditing();
+
+    }
+
+    @Override
+    public void recycleObserver(IObserver observer) {
+
+        IObserver obs = observer;
+
+        while(obs != null) {
+            obs.off(null,null,this);
+            obs = obs.parent();
+        }
 
         Element p = firstChild();
 
         while(p != null) {
+
             if(p instanceof PageElement) {
-                String v = p.get(Style.Reuse,String.class);
-                if((v == reuse) || (reuse != null && reuse.equals(v))) {
-                    RowElement row = (RowElement) p.reflect();
-                    append(row);
-                    return row;
+
+                IWithObserver withObserver = p.get(Style.Observer,IWithObserver.class);
+
+                if(withObserver != null) {
+                    withObserver.recycle();
                 }
-                break;
+
+                p.removeProperty(Style.Observer);
+
             }
+
             p = p.nextSibling();
         }
 
-        return null;
     }
 
     private static class ViewPagerElementAdpater extends PagerAdapter {
@@ -118,6 +214,7 @@ public class ViewPagerElement extends ViewElement  {
 
         protected List<RowElement> rowElements() {
             if(_rowElements == null) {
+
                 _rowElements = new ArrayList<>(4);
 
                 ViewPagerElement pager = _element.get();
@@ -147,7 +244,7 @@ public class ViewPagerElement extends ViewElement  {
         @Override
         public boolean isViewFromObject(View view, Object object) {
             RowElement row = (RowElement) object;
-            return row.element != null && ((PageElement) row.element).view() == view;
+            return row.element != null && row.element.view() == view;
         }
 
         @Override
@@ -156,9 +253,20 @@ public class ViewPagerElement extends ViewElement  {
             RowElement row = (RowElement) object;
 
             if(row.element != null) {
-                PageElement page = (PageElement) row.element;
+
+                PageElement page = row.element;
                 container.removeView(page.view());
-                row.cancelReflect();
+
+                IWithObserver withObserver = page.get(Style.Observer,IWithObserver.class);
+
+                if(withObserver != null) {
+                    Element.recycleObserver(page,withObserver);
+                    withObserver.recycle();
+                }
+
+                page.removeProperty(Style.Observer);
+
+                row.element = null;
             }
 
         }
@@ -206,7 +314,33 @@ public class ViewPagerElement extends ViewElement  {
                     }
                 }
 
-                rowElement.commitReflect(page);
+                rowElement.element = page;
+
+                {
+
+                    IWithObserver withObserver = page.get(Style.Observer,IWithObserver.class);
+
+                    if(withObserver != null) {
+                        Element.recycleObserver(page,withObserver);
+                        withObserver.recycle();
+                    }
+
+                    IObserver observer = rowElement.get(Style.Observer,IObserver.class);
+                    String key = rowElement.get(Style.Key,String.class);
+
+                    if(observer != null && key != null) {
+
+                        Log.d(KK.TAG,key);
+
+                        withObserver = observer.with(Observer.keys(key));
+
+                        page.set(Style.Observer,withObserver);
+
+                        Element.obtainObserver(page,withObserver);
+
+                    }
+                }
+
                 View view = page.view();
                 ViewParent pv = view.getParent();
                 if(p != null && pv instanceof ViewGroup) {
@@ -224,13 +358,12 @@ public class ViewPagerElement extends ViewElement  {
 
     public static class PageElement extends ViewElement {
 
-        public PageElement(View view) {
-            super(view);
+        public PageElement(Context context) {
+            super(context);
         }
 
-        @Override
-        protected ReflectElement onCreateReflectElement() {
-            return new RowElement(this);
+        public PageElement(View view) {
+            super(view);
         }
 
         @Override
@@ -242,14 +375,46 @@ public class ViewPagerElement extends ViewElement  {
         protected void onAddToParent(Element element) {
 
         }
+
     }
 
-    public static class RowElement extends ReflectElement {
+    public static class RowElement extends Element {
 
-        public RowElement(PageElement element) {
-            super(element);
+        public PageElement element;
+
+        public RowElement() {
+
         }
 
+        @Override
+        protected Element onCreateCloneElement() {
+            return new RowElement();
+        }
     }
 
+    public static class PagerLayout extends Layout {
+
+        public Size layoutChildren(Element element) {
+
+            Rect v = element.get(Frame,Rect.class);
+
+            if(v != null) {
+
+                Element p = element.firstChild();
+
+                while(p != null) {
+
+                    if(p instanceof PageElement) {
+                        Layout.elementLayout(p,v.size);
+                    }
+
+                    p = p.nextSibling();
+                }
+
+                return v.size;
+            }
+
+            return Size.Zero;
+        }
+    }
 }

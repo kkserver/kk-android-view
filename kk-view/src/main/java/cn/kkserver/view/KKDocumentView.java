@@ -13,8 +13,8 @@ import cn.kkserver.view.element.BodyElement;
 import cn.kkserver.view.element.DocumentElement;
 import cn.kkserver.view.element.Element;
 import cn.kkserver.view.element.Layout;
-import cn.kkserver.view.element.ScriptElement;
 import cn.kkserver.view.element.StyleElement;
+import cn.kkserver.view.element.ViewPagerElement;
 import cn.kkserver.view.style.Style;
 import cn.kkserver.view.value.Size;
 
@@ -91,15 +91,6 @@ public class KKDocumentView extends KKView {
 
     }
 
-    public boolean runScript(IObserver observer,Object weakObject) throws Throwable {
-
-        if(_documentElement != null) {
-            return ScriptElement.runScript(_documentElement,observer,weakObject);
-        }
-
-        return false;
-    }
-
     public void load(int id) throws ClassNotFoundException, XmlPullParserException, InstantiationException, IllegalAccessException, IOException, InvocationTargetException {
         loadXML(getResources().getXml(id));
     }
@@ -133,7 +124,10 @@ public class KKDocumentView extends KKView {
                             setElementAttribute(el, parser.getAttributeName(i), parser.getAttributeValue(i));
                         }
 
-                        element.append(el);
+                        if(el.parent() != element) {
+                            element.append(el);
+                        }
+
                         element = el;
 
                     }
@@ -183,17 +177,34 @@ public class KKDocumentView extends KKView {
 
     protected Element onCreateElement(String name,Element parent) throws ClassNotFoundException, IllegalAccessException, InstantiationException, InvocationTargetException {
 
+        if(parent instanceof ViewPagerElement) {
+
+            ViewPagerElement pager = (ViewPagerElement) parent;
+
+            if("page".equals(name)) {
+                return new ViewPagerElement.PageElement(getContext());
+            }
+
+            if("row".equals(name)) {
+                return new ViewPagerElement.RowElement();
+            }
+
+        }
+
         if("body".equals(name)) {
             return _bodyElement;
         }
 
-        String[] ns = name.split(":");
-        Style v = _documentElement.styleSheet.get(ns[0]);
+        if("outlet".equals(name)) {
+            System.out.println();
+        }
+
+        Style v = _documentElement.styleSheet.get(name);
         Element element = null;
 
         if(v != null) {
 
-            Object className = v.get(Style.Class,ns.length > 1? ns[1] : "");
+            Object className = v.get(Style.Class,"");
 
             if(className != null && className instanceof String) {
 
@@ -214,7 +225,7 @@ public class KKDocumentView extends KKView {
         }
 
         if(v != null) {
-            v.applyElement(element,ns.length > 1? ns[1] : "");
+            v.applyElement(element,"");
         }
 
         return element;

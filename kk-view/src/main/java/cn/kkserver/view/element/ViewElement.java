@@ -3,6 +3,7 @@ package cn.kkserver.view.element;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.FloatRange;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -10,6 +11,7 @@ import android.view.animation.Animation;
 
 import java.lang.ref.WeakReference;
 
+import cn.kkserver.view.KK;
 import cn.kkserver.view.KKDocumentView;
 import cn.kkserver.view.KKView;
 import cn.kkserver.view.Property;
@@ -105,6 +107,7 @@ public class ViewElement extends Element {
             view.requestLayout();
         }
         else if(property == Style.Animation) {
+            view.clearAnimation();
             if(newValue != null ) {
                 if(newValue instanceof AnimationElement) {
                     view.startAnimation(((AnimationElement) newValue).getAnimation());
@@ -114,16 +117,7 @@ public class ViewElement extends Element {
                     if(anim != null) {
                         view.startAnimation(anim);
                     }
-                    else {
-                        view.clearAnimation();
-                    }
                 }
-                else {
-                    view.clearAnimation();
-                }
-            }
-            else {
-                view.clearAnimation();
             }
         }
 
@@ -163,12 +157,13 @@ public class ViewElement extends Element {
 
     @Override
     protected Element onCreateCloneElement() {
-        View view = null;
         try {
-            view = _view == null ? null : _view.getClass().getConstructor(Context.class).newInstance(_view.getContext());
+            View view = _view == null ? null : _view.getClass().getConstructor(Context.class).newInstance(_view.getContext());
+            return getClass().getConstructor(View.class).newInstance(view);
         } catch (Throwable e) {
+            Log.d(KK.TAG,e.getMessage(),e);
+            return null;
         }
-        return new ViewElement(view);
     }
 
 }

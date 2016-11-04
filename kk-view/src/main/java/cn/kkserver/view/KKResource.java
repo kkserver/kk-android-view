@@ -1,5 +1,6 @@
 package cn.kkserver.view;
 
+import android.content.Context;
 import android.os.Handler;
 import java.net.URL;
 import java.util.TreeMap;
@@ -48,5 +49,19 @@ public class KKResource extends Object {
 
         public <T extends Object> T load(URL url,Class<T> type,Callback<T> cb);
 
+    }
+
+    public static class ResourceLoaderCallback implements LoaderCallback {
+
+        private final Context _context;
+
+        public ResourceLoaderCallback(Context context) {
+            _context = context;
+        }
+
+        @Override
+        public <T> T load(URL url, Class<T> type, Callback<T> cb) {
+            return null;
+        }
     }
 }

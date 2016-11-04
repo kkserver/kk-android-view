@@ -23,6 +23,13 @@ public class Layout extends Object {
         }
     }
 
+    public static void elementLayout(Element element,Size size) {
+        Layout layout = element.get(Style.Layout,Layout.class);
+        if(layout != null) {
+            layout.layout(element,size);
+        }
+    }
+
     public void layout(Element element, Size size) {
 
         KKValue width = element.get(Style.Width,KKValue.class, KKValue.Zero);

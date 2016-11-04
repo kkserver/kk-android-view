@@ -25,17 +25,14 @@
     button {
         class: cn.kkserver.view.element.ButtonElement;
     }
-    script {
-        class: cn.kkserver.view.element.ScriptElement;
-    }
     outlet {
-        class: cn.kkserver.view.element.ScriptElement;
-        type: cn.kkserver.view.script.Script;
-        name: Outlet;
+        class: cn.kkserver.view.element.OutletElement;
     }
-    foreach {
-        class: cn.kkserver.view.element.ForeachElement;
-        property: object;
+    each {
+        class: cn.kkserver.view.element.EachElement;
+    }
+    with {
+        class: cn.kkserver.view.element.WithElement;
     }
     animation {
         class: cn.kkserver.view.element.AnimationElement$SetElement;

@@ -150,7 +150,7 @@ public class ButtonElement extends CanvasElement {
         super.onPropertyChanged(property,value,newValue);
     }
 
-        @Override
+    @Override
     protected Element onCreateCloneElement() {
         return new ButtonElement(view().getContext());
     }

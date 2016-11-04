@@ -4,6 +4,7 @@ import java.lang.ref.WeakReference;
 import java.util.Set;
 import java.util.TreeMap;
 
+import cn.kkserver.observer.IObserver;
 import cn.kkserver.view.Property;
 import cn.kkserver.view.style.Style;
 import cn.kkserver.view.event.Event;
@@ -321,36 +322,59 @@ public class Element extends EventEmitter {
 
     }
 
-
-    public ReflectElement reflect() {
-        ReflectElement v = onCreateReflectElement();
-        Element p = firstChild();
-        while(p != null) {
-            v.append(p.reflect());
-            p = p.nextSibling();
-        }
-        return v;
-    }
-
-    protected ReflectElement onCreateReflectElement() {
-        return new ReflectElement(this);
-    }
-
-
     public Element clone() {
+
         Element v = onCreateCloneElement();
+
         for(Property property : propertys()) {
             v.set(property, get(property));
         }
+
         Element p = firstChild();
+
         while(p != null) {
-            v.append(p.clone());
+
+            if(!(p instanceof IReflectElement)) {
+                v.append(p.clone());
+            }
+
             p = p.nextSibling();
         }
+
         return v;
     }
 
     protected Element onCreateCloneElement() {
         return new Element();
+    }
+
+
+    public static void obtainObserver(Element element,IObserver observer) {
+
+        if(element instanceof IObserverElement) {
+            ((IObserverElement) element).obtainObserver(observer);
+        }
+        else {
+            Element p = element.firstChild();
+            while(p != null) {
+                obtainObserver(p,observer);
+                p = p.nextSibling();
+            }
+        }
+    }
+
+    public static void recycleObserver(Element element, IObserver observer) {
+
+        if(element instanceof IObserverElement) {
+            ((IObserverElement) element).recycleObserver(observer);
+        }
+        else {
+            Element p = element.firstChild();
+            while(p != null) {
+                recycleObserver(p,observer);
+                p = p.nextSibling();
+            }
+        }
+
     }
 }
