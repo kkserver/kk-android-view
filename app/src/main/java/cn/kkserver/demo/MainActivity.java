@@ -13,6 +13,7 @@ import java.util.TreeMap;
 
 import cn.kkserver.observer.IObserver;
 import cn.kkserver.observer.Observer;
+import cn.kkserver.view.element.Element;
 import cn.kkserver.view.event.Event;
 import cn.kkserver.view.event.EventFunction;
 import cn.kkserver.view.KK;
@@ -37,7 +38,7 @@ public class MainActivity extends Activity {
         try {
             documentView = ((KKDocumentView) findViewById(R.id.activity_main));
             documentView.load(R.xml.main);
-            documentView.runScript(observer,this);
+            Element.obtainObserver(documentView.bodyElement(),observer);
             documentView.bodyElement().on("action.editing", new EventFunction<IObserver>() {
 
                 @Override
