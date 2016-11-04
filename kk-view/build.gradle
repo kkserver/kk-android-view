@@ -27,6 +27,8 @@ dependencies {
     //compile project(':kk-obs')
 }
 
+apply plugin: 'maven'
+
 uploadArchives {
     repositories {
         mavenDeployer {
