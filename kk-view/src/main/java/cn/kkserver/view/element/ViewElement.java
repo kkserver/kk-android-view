@@ -2,17 +2,13 @@ package cn.kkserver.view.element;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.FloatRange;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.Animation;
-
 import java.lang.ref.WeakReference;
-
 import cn.kkserver.view.KK;
-import cn.kkserver.view.KKDocumentView;
 import cn.kkserver.view.KKView;
 import cn.kkserver.view.Property;
 import cn.kkserver.view.R;
@@ -88,7 +84,7 @@ public class ViewElement extends Element {
         }
         else if(property == Style.Opacity) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                @FloatRange(from=0.0, to=1.0) float v = newValue == null ? 1.0f : ((Float) newValue).floatValue();
+                float v = newValue == null ? 1.0f : ((Float) newValue).floatValue();
                 view.setAlpha(v);
             }
         }
