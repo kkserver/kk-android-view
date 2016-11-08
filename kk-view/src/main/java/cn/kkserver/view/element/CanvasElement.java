@@ -18,24 +18,26 @@ import cn.kkserver.view.value.Color;
 
 public class CanvasElement extends ViewElement {
 
-    private final OnCallbackImpl _cb = new OnCallbackImpl(this);
-
     public KKCanvasView canvasView() {
         return (KKCanvasView) view();
     }
 
     public CanvasElement(Context context) {
         super(new KKCanvasView(context));
-        canvasView().setOnCallback(_cb);
+        canvasView().setOnDrawCallback(new OnDrawCallbackImpl(this));
     }
-
 
     protected void onDraw(Canvas canvas) {
 
-    }
+        Element e = firstChild();
 
-    protected boolean onTouchEvent(MotionEvent event) {
-        return false;
+        while(e != null) {
+            if(e instanceof PaintElement) {
+                ((PaintElement) e).draw(canvas);
+            }
+            e = e.nextSibling();
+        }
+
     }
 
     protected boolean needDisplayProperty(Property property) {
@@ -74,11 +76,12 @@ public class CanvasElement extends ViewElement {
         return new CanvasElement(view().getContext());
     }
 
-    private static class OnCallbackImpl implements KKCanvasView.OnCallback {
+
+    private static class OnDrawCallbackImpl implements KKCanvasView.OnDrawCallback {
 
         private WeakReference<CanvasElement> _element;
 
-        public OnCallbackImpl(CanvasElement element) {
+        public OnDrawCallbackImpl(CanvasElement element) {
             _element = new WeakReference<>(element);
         }
 
@@ -90,13 +93,5 @@ public class CanvasElement extends ViewElement {
             }
         }
 
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            CanvasElement e = _element.get();
-            if(e != null) {
-                return e.onTouchEvent(event);
-            }
-            return false;
-        }
     }
 }

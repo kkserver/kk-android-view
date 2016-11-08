@@ -122,15 +122,14 @@ public class EachElement extends ViewElement implements IObserverElement {
 
             p.set(Style.Observer,withObserver);
 
-            e = p.firstChild();
+            Element n = p.firstChild();
 
-            while(e != null) {
+            while(n != null) {
 
-                Element.obtainObserver(e,withObserver);
+                Element.obtainObserver(n,withObserver);
 
-                e = e.nextSibling();
+                n = n.nextSibling();
             }
-
 
             idx ++;
         }

@@ -1,6 +1,8 @@
 package cn.kkserver.view.style;
 
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import cn.kkserver.view.value.KKEdge;
 import cn.kkserver.view.value.KKPoint;
@@ -128,6 +130,10 @@ public class Style extends Object {
 
     public final static Property Gravity = new Property.StringProperty("gravity");
 
+    public final static Property Draggable = new Property.StringProperty("draggable");
+
+    public final static Property Droppable = new Property.StringProperty("droppable");
+
     public final static Property[] Propertys = new Property[]{
             BackgroundColor,
             BorderColor,
@@ -189,7 +195,9 @@ public class Style extends Object {
             Animation,
             Image,
             Text,
-            Gravity
+            Gravity,
+            Draggable,
+            Droppable
     };
 
     private final static TreeMap<String,Property> _propertysMap;
@@ -239,6 +247,7 @@ public class Style extends Object {
         }
     }
 
+    private Set<Property> _propertys = new TreeSet<>();
     private TreeMap<String,TreeMap<Property,Object>> _propertyValues = new TreeMap<>();
 
     public void loadCSSContent(String cssContent,String status) {
@@ -273,6 +282,12 @@ public class Style extends Object {
                 return values.get(property);
             }
         }
+        else if(! "".equals(status) && _propertyValues.containsKey("")) {
+            TreeMap<Property,Object> values = _propertyValues.get("");
+            if(values.containsKey(property)) {
+                return values.get(property);
+            }
+        }
 
         return null;
     }
@@ -295,74 +310,12 @@ public class Style extends Object {
 
         values.put(property,property.valueOf(value));
 
-    }
-
-    public void remove(Property property,String status) {
-
-        if(status == null) {
-            status = "";
-        }
-
-        if(_propertyValues.containsKey(status)) {
-            TreeMap<Property,Object> values = _propertyValues.get(status);
-            if(values.containsKey(property)) {
-                values.remove(property);
-            }
-        }
+        _propertys.add(property);
 
     }
 
-    public void applyElement(cn.kkserver.view.element.Element element, String status) {
-        if(_propertyValues.containsKey(status)) {
-            TreeMap<Property,Object> values = _propertyValues.get(status);
-            for(Property property : values.keySet()) {
-                element.set(property,values.get(property));
-            }
-        }
+    public Set<Property> propertys() {
+        return _propertys;
     }
 
-    public void applyElement(Element element) {
-
-        String status = element.get(Status,String.class);
-
-        if(status == null) {
-            status = element.get(InStatus,String.class);
-        }
-
-        if(status == null) {
-            status = "";
-        }
-
-        applyElement(element,status);
-
-    }
-
-    public void changedElement(Element element,String status) {
-
-        if(_propertyValues.containsKey(status)) {
-            TreeMap<Property,Object> values = _propertyValues.get(status);
-            for(Property property : values.keySet()) {
-                if(property != Style || property != Status) {
-                    element.changeProperty(property);
-                }
-            }
-        }
-
-    }
-
-    public void changedElement(Element element) {
-
-        String status = element.get(Status,String.class);
-
-        if(status == null) {
-            status = element.get(InStatus,String.class);
-        }
-
-        if(status == null) {
-            status = "";
-        }
-
-        changedElement(element,status);
-
-    }
 }

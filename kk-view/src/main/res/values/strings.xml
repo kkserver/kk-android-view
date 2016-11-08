@@ -10,6 +10,9 @@
     canvas {
         class: cn.kkserver.view.element.CanvasElement;
     }
+    paint {
+        class: cn.kkserver.view.element.PaintElement;
+    }
     view {
         class: cn.kkserver.view.element.ViewElement;
     }
@@ -33,6 +36,9 @@
     }
     with {
         class: cn.kkserver.view.element.WithElement;
+    }
+    script {
+        class: cn.kkserver.view.element.ScriptElement;
     }
     animation {
         class: cn.kkserver.view.element.AnimationElement$SetElement;

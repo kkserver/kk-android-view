@@ -1,20 +1,52 @@
 package cn.kkserver.view.element;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import cn.kkserver.observer.IObserver;
 import cn.kkserver.observer.Listener;
 import cn.kkserver.observer.Observer;
 import cn.kkserver.view.Property;
+import cn.kkserver.view.script.IScriptFunction;
 import cn.kkserver.view.style.Style;
 
 /**
  * Created by zhanghailong on 2016/11/4.
  */
 
-public class OutletElement extends Element implements IObserverElement {
+public class OutletElement extends ScriptElement implements IObserverElement {
 
+    public final static Object Done = new Object();
 
     @Override
-    public void obtainObserver(IObserver observer) {
+    protected void onScriptFunctionCall(IScriptFunction func) throws Throwable {
+
+    }
+
+    protected Object onValue(Element element,IObserver observer,IObserver obs,String[] keys,Object value) {
+
+        if(hasScriptFunction()) {
+
+            Map<String, Object> object = new TreeMap<>();
+
+            object.put("value", value);
+            object.put("key", Observer.joinString(keys));
+            object.put("observer",observer);
+            object.put("obs",obs);
+            object.put("element",element);
+            object.put("done",Done);
+
+            try {
+                value = call(object);
+            } catch (Throwable ex) {
+            }
+        }
+
+        return value;
+    }
+
+    @Override
+    public void obtainObserver(final IObserver observer) {
 
         String key = get(Style.Key,String.class);
         String property = get(Style.Property,String.class);
@@ -37,12 +69,21 @@ public class OutletElement extends Element implements IObserverElement {
 
                 if(element != null && obs != null) {
 
-                    element.set(prop,obs.get(keys));
+                    Object v = onValue(element,observer,obs,keys,obs.get(keys));
+
+                    if(v != Done) {
+                        element.set(prop, v);
+                    }
 
                     obs.on(keys, new Listener<OutletElement>() {
                         @Override
-                        public void onChanged(IObserver observer, String[] changedKeys, OutletElement outlet) {
-                            element.set(prop,observer.get(keys));
+                        public void onChanged(IObserver obs, String[] changedKeys, OutletElement outlet) {
+                            if(outlet != null) {
+                                Object v = outlet.onValue(element,observer,obs,keys, obs.get(keys));
+                                if(v != Done) {
+                                    element.set(prop,v);
+                                }
+                            }
                         }
                     },this);
 

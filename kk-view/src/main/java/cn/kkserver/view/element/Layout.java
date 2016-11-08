@@ -150,9 +150,7 @@ public class Layout extends Object {
 
                 Layout layout = p.get(Style.Layout,Layout.class);
 
-                Boolean hidden = p.get(Style.Hidden,Boolean.class,false);
-
-                if(layout != null && ! hidden){
+                if(layout != null ){
 
                     layout.layout(p,inSize);
 

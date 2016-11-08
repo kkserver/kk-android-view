@@ -3,6 +3,7 @@ package cn.kkserver.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -20,10 +21,10 @@ public class KKCanvasView extends KKView {
     public KKValue borderWidth;
     public int borderColor;
 
-    private OnCallback _cb;
+    private OnDrawCallback _drawCallback;
 
-    public void setOnCallback(OnCallback cb) {
-        _cb = cb;
+    public void setOnDrawCallback(OnDrawCallback cb) {
+        _drawCallback = cb;
     }
 
     public KKCanvasView(Context context) {
@@ -41,26 +42,19 @@ public class KKCanvasView extends KKView {
 
         onDrawBackground(canvas);
 
-        if(_cb != null) {
-            _cb.onDraw(canvas);
+        if(_drawCallback != null) {
+            _drawCallback.onDraw(canvas);
         }
 
         onDrawBorder(canvas);
 
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        if(_cb != null) {
-            return _cb.onTouchEvent(event) || super.onTouchEvent(event);
-        }
-
-        return super.onTouchEvent(event);
-    }
-
     protected void onDrawBackground(Canvas canvas){
 
+        if(backgroundColor == 0xffdddddd) {
+            System.out.println();
+        }
         if((backgroundColor & 0x0ff000000) != 0 ){
 
             float width = canvas.getWidth();
@@ -81,8 +75,8 @@ public class KKCanvasView extends KKView {
                 canvas.drawRect(dw,dw,width -dw,height - dw,paint);
             }
             else {
-                canvas.drawRoundRect(new RectF(dw,dw,width- dw,height- dw)
-                        ,radius,radius  ,paint);
+                canvas.drawRoundRect(new RectF(dw,dw,width - dw,height - dw )
+                        ,radius ,radius ,paint);
             }
 
         }
@@ -121,11 +115,14 @@ public class KKCanvasView extends KKView {
 
     }
 
-    public static interface OnCallback {
+    @Override
+    public void setBackgroundColor(int value) {
+        backgroundColor = value;
+    }
+
+    public static interface OnDrawCallback {
 
         public void onDraw(Canvas canvas);
-
-        boolean onTouchEvent(MotionEvent event);
 
     }
 }

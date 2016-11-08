@@ -2,7 +2,10 @@ package cn.kkserver.view.element;
 
 import android.content.Context;
 import android.os.Build;
+import android.support.annotation.FloatRange;
 import android.util.Log;
+import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -25,6 +28,20 @@ public class ViewElement extends Element {
     private View _view;
     private WeakReference<View> _weakView;
 
+    protected boolean onTouchEvent(MotionEvent event) {
+
+        ViewElementEvent e = new ViewElementEvent(this,event);
+
+        sendEvent(ViewElementEvent.TOUCH,e);
+
+        return e.returnResult;
+
+    }
+
+    protected boolean onDragEvent(DragEvent event) {
+        return false;
+    }
+
     public View view() {
         if(_view == null && _weakView != null) {
             return _weakView.get();
@@ -43,6 +60,9 @@ public class ViewElement extends Element {
         else {
             _view = view;
         }
+
+        view.setOnTouchListener(new OnCallback(this));
+
         set(Style.Layout,"none");
     }
 
@@ -60,6 +80,12 @@ public class ViewElement extends Element {
 
         if(! view.isEnabled()) {
             set(Style.Status,"disabled");
+        }
+        else if(get(Style.Selected,Boolean.class,false)) {
+            set(Style.Status,"selected");
+        }
+        else {
+            removeProperty(Style.Status);
         }
     }
 
@@ -83,10 +109,8 @@ public class ViewElement extends Element {
             view.setVisibility(newValue == null || (Boolean) newValue ? View.GONE : View.VISIBLE);
         }
         else if(property == Style.Opacity) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                float v = newValue == null ? 1.0f : ((Float) newValue).floatValue();
-                view.setAlpha(v);
-            }
+            @FloatRange(from=0.0, to=1.0) float v = newValue == null ? 1.0f : ((Float) newValue).floatValue();
+            view.setAlpha(v);
         }
         else if(property == Style.Scale) {
 
@@ -116,6 +140,9 @@ public class ViewElement extends Element {
                 }
             }
         }
+        else if(property == Style.Selected) {
+            onStatusChanged();
+        }
 
         if(view instanceof IElementView) {
             ((IElementView) view).onElementPropertyChanged(this,property,value,newValue);
@@ -130,6 +157,7 @@ public class ViewElement extends Element {
         View v = view();
         ViewParent p = v.getParent();
         if(p != null && p instanceof ViewGroup) {
+            v.clearAnimation();
             ((ViewGroup)p).removeView(v);
         }
     }
@@ -160,6 +188,35 @@ public class ViewElement extends Element {
             Log.d(KK.TAG,e.getMessage(),e);
             return null;
         }
+    }
+
+    private static class OnCallback implements View.OnTouchListener,View.OnDragListener {
+
+        private WeakReference<ViewElement> _element;
+
+        public OnCallback(ViewElement element) {
+            _element = new WeakReference<>(element);
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            ViewElement e = _element.get();
+            if(e != null) {
+                return e.onTouchEvent(event);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onDrag(View v, DragEvent event) {
+            ViewElement e = _element.get();
+            if(e != null) {
+                return e.onDragEvent(event);
+            }
+            return false;
+        }
+
+
     }
 
 }

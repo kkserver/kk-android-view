@@ -296,7 +296,18 @@ public class Element extends EventEmitter {
             Style v = get(Style.Style,Style.class);
 
             if(v != null) {
-                v.changedElement(this);
+
+                String status = get(Style.Status,String.class);
+
+                if(status == null) {
+                    status = get(Style.InStatus,String.class);
+                }
+
+                for(Property prop : v.propertys()) {
+                    if(prop != Style.Status && prop != Style.Status && prop != Style.InStatus) {
+                        set(prop,v.get(prop,status));
+                    }
+                }
             }
 
             Element p = firstChild();
@@ -315,7 +326,20 @@ public class Element extends EventEmitter {
         else if(property == Style.Style) {
 
             if(newValue instanceof Style) {
-                ((Style) newValue).changedElement(this);
+
+                Style v = (Style) newValue;
+
+                String status = get(Style.Status,String.class);
+
+                if(status == null) {
+                    status = get(Style.InStatus,String.class);
+                }
+
+                for(Property prop : v.propertys()) {
+                    if(prop != Style.Status && prop != Style.Status && prop != Style.InStatus) {
+                        set(prop,v.get(prop,status));
+                    }
+                }
             }
 
         }

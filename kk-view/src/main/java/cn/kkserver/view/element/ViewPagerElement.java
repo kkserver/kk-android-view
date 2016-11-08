@@ -26,7 +26,7 @@ import cn.kkserver.view.value.Size;
  * Created by zhanghailong on 2016/11/1.
  */
 
-public class ViewPagerElement extends ViewElement implements IEditingElement,IObserverElement {
+public class ViewPagerElement extends ViewElement implements IEditingElement,IObserverElement,IElementCreator {
 
     private final ViewPagerElementAdpater _adapter = new ViewPagerElementAdpater(this);
     private boolean _editing;
@@ -139,8 +139,10 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
                 append(p);
             }
 
+            String[] keys = Observer.join(baseKeys,new String[]{String.valueOf(idx)});
+
             p.set(Style.Observer,observer);
-            p.set(Style.Key, Observer.joinString(Observer.join(baseKeys,new String[]{String.valueOf(idx)})));
+            p.set(Style.Key, Observer.joinString(keys));
 
             idx ++;
 
@@ -151,7 +153,9 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
         }
 
         while(p != null) {
+
             if(p instanceof RowElement) {
+
                 Element n = p.nextSibling();
                 p.remove();
                 p = n;
@@ -194,6 +198,20 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
             p = p.nextSibling();
         }
 
+    }
+
+    @Override
+    public Element onCreateElement(String name) throws Throwable {
+
+        if("page".equals(name)) {
+            return new ViewPagerElement.PageElement(view().getContext());
+        }
+
+        if("row".equals(name)) {
+            return new ViewPagerElement.RowElement();
+        }
+
+        return null;
     }
 
     private static class ViewPagerElementAdpater extends PagerAdapter {
@@ -329,8 +347,6 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
                     String key = rowElement.get(Style.Key,String.class);
 
                     if(observer != null && key != null) {
-
-                        Log.d(KK.TAG,key);
 
                         withObserver = observer.with(Observer.keys(key));
 

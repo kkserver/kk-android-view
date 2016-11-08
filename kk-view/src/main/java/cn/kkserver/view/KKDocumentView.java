@@ -7,11 +7,11 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import cn.kkserver.observer.IObserver;
 import cn.kkserver.view.element.AnimationElement;
 import cn.kkserver.view.element.BodyElement;
 import cn.kkserver.view.element.DocumentElement;
 import cn.kkserver.view.element.Element;
+import cn.kkserver.view.element.IElementCreator;
 import cn.kkserver.view.element.Layout;
 import cn.kkserver.view.element.StyleElement;
 import cn.kkserver.view.element.ViewPagerElement;
@@ -91,11 +91,11 @@ public class KKDocumentView extends KKView {
 
     }
 
-    public void load(int id) throws ClassNotFoundException, XmlPullParserException, InstantiationException, IllegalAccessException, IOException, InvocationTargetException {
+    public void load(int id) throws Throwable {
         loadXML(getResources().getXml(id));
     }
 
-    public void loadXML(XmlPullParser parser) throws IOException, XmlPullParserException, IllegalAccessException, InstantiationException, ClassNotFoundException, InvocationTargetException {
+    public void loadXML(XmlPullParser parser) throws Throwable {
 
         onStartDocument(parser);
 
@@ -175,20 +175,13 @@ public class KKDocumentView extends KKView {
 
     }
 
-    protected Element onCreateElement(String name,Element parent) throws ClassNotFoundException, IllegalAccessException, InstantiationException, InvocationTargetException {
+    protected Element onCreateElement(String name,Element parent) throws Throwable {
 
-        if(parent instanceof ViewPagerElement) {
-
-            ViewPagerElement pager = (ViewPagerElement) parent;
-
-            if("page".equals(name)) {
-                return new ViewPagerElement.PageElement(getContext());
+        if(parent instanceof IElementCreator) {
+            Element e = ((IElementCreator) parent).onCreateElement(name);
+            if(e != null){
+                return e;
             }
-
-            if("row".equals(name)) {
-                return new ViewPagerElement.RowElement();
-            }
-
         }
 
         if("body".equals(name)) {
@@ -225,7 +218,11 @@ public class KKDocumentView extends KKView {
         }
 
         if(v != null) {
-            v.applyElement(element,"");
+
+            for(Property prop : v.propertys()) {
+                element.set(prop,v.get(prop,""));
+            }
+
         }
 
         return element;
