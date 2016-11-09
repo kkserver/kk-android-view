@@ -1,6 +1,7 @@
 package cn.kkserver.view.element;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.os.Build;
 import android.support.annotation.FloatRange;
 import android.util.Log;
@@ -30,16 +31,21 @@ public class ViewElement extends Element {
 
     protected boolean onTouchEvent(MotionEvent event) {
 
-        ViewElementEvent e = new ViewElementEvent(this,event);
+        ViewElementMotionEvent e = new ViewElementMotionEvent(this,event);
 
-        sendEvent(ViewElementEvent.TOUCH,e);
+        sendEvent(ViewElementMotionEvent.TOUCH,e);
 
         return e.returnResult;
 
     }
 
     protected boolean onDragEvent(DragEvent event) {
-        return false;
+
+        ViewElementDragEvent ev = new ViewElementDragEvent(this,event);
+
+        sendEvent(ViewElementDragEvent.DRAG,ev);
+
+        return ev.returnResult;
     }
 
     public View view() {
@@ -61,7 +67,9 @@ public class ViewElement extends Element {
             _view = view;
         }
 
-        view.setOnTouchListener(new OnCallback(this));
+        OnCallback cb = new OnCallback(this);
+
+        view.setOnTouchListener(cb);
 
         set(Style.Layout,"none");
     }
@@ -143,6 +151,14 @@ public class ViewElement extends Element {
         else if(property == Style.Selected) {
             onStatusChanged();
         }
+        else if(property == Style.Droppable) {
+            if(newValue != null && (Boolean) newValue) {
+                view.setOnDragListener(new OnCallback(this));
+            }
+            else {
+                view.setOnDragListener(null);
+            }
+        }
 
         if(view instanceof IElementView) {
             ((IElementView) view).onElementPropertyChanged(this,property,value,newValue);
@@ -219,4 +235,23 @@ public class ViewElement extends Element {
 
     }
 
+    public void startDraggable() {
+
+        View v = view();
+
+        if(v != null) {
+
+            // Instantiates the drag shadow builder.
+            View.DragShadowBuilder myShadow = new View.DragShadowBuilder(v);
+
+            // Starts the drag
+            v.startDrag(null,  // the data to be dragged
+                    myShadow,  // the drag shadow builder
+                    this,      // no need to use local data
+                    0          // flags (not currently used, set to 0)
+            );
+
+        }
+
+    }
 }

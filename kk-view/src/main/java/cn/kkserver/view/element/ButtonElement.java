@@ -1,12 +1,8 @@
 package cn.kkserver.view.element;
 
 import android.content.Context;
-import android.graphics.Matrix;
-import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 
 import java.lang.ref.WeakReference;
 
@@ -32,84 +28,89 @@ public class ButtonElement extends CanvasElement {
     protected boolean onTouchEvent(MotionEvent event) {
 
         if(super.onTouchEvent(event) == false) {
-            Boolean enabled = get(Style.Enabled, Boolean.class, true);
-            Boolean selected = get(Style.Selected, Boolean.class, false);
 
-            if (enabled && !selected) {
+            int action = event.getAction() & MotionEvent.ACTION_MASK;
 
-                int action = event.getAction() & MotionEvent.ACTION_MASK;
+            if (action == MotionEvent.ACTION_DOWN) {
 
-                if (action == MotionEvent.ACTION_DOWN) {
+                ViewElementMotionEvent ev = new ViewElementMotionEvent(this,event);
 
-                    ViewElementEvent ev = new ViewElementEvent(this,event);
+                ev.returnResult = true;
 
-                    ev.returnResult = true;
+                sendEvent(ViewElementMotionEvent.HOVER,ev);
 
-                    sendEvent(ViewElementEvent.HOVER,ev);
+                if(ev.returnResult) {
 
-                    if(ev.returnResult) {
+                    setHover(true);
 
-                        setHover(true);
+                    {
 
-                        final String name = get(Style.LongAction, String.class);
+                        String name = get(Style.TapAction,String.class);
 
-                        if (name != null) {
-
-                            view().getHandler().postDelayed(_longActionRunnable, 800);
-
+                        if(name != null) {
+                            ev = new ViewElementMotionEvent(this,event);
+                            sendEvent(name,ev);
+                            return true;
                         }
 
-                        return true;
                     }
 
-                    return false;
+                    final String name = get(Style.LongAction, String.class);
 
-                } else if (action == MotionEvent.ACTION_UP) {
+                    if (name != null) {
 
-                    if (isHover()) {
+                        view().getHandler().postDelayed(_longActionRunnable, 800);
 
-                        view().getHandler().removeCallbacks(_longActionRunnable);
-
-                        String v = get(Style.Action, String.class);
-
-                        if (v != null) {
-
-                            final ElementEvent e = new ElementEvent(this);
-                            final String name = v;
-
-                            view().getHandler().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    e.element.sendEvent(name, e);
-                                }
-                            });
-
-                        }
-
-                        setHover(false);
                     }
 
-                    return true;
-                } else if (action == MotionEvent.ACTION_MOVE) {
-
-                    Rect frame = get(Layout.Frame, Rect.class);
-                    if (frame != null && event.getX() >= 0 && event.getX() < frame.size.width
-                            && event.getY() >= 0 && event.getY() < frame.size.height) {
-                        setHover(true);
-                    } else {
-                        setHover(false);
-                        view().getHandler().removeCallbacks(_longActionRunnable);
-                    }
                     return true;
                 }
-                else {
+
+                return false;
+
+            } else if (action == MotionEvent.ACTION_UP) {
+
+                if (isHover()) {
+
                     view().getHandler().removeCallbacks(_longActionRunnable);
+
+                    String v = get(Style.Action, String.class);
+
+                    if (v != null) {
+
+                        final ElementEvent e = new ElementEvent(this);
+                        final String name = v;
+
+                        view().getHandler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                e.element.sendEvent(name, e);
+                            }
+                        });
+
+                    }
+
                     setHover(false);
-                    return true;
                 }
 
+                return true;
+            } else if (action == MotionEvent.ACTION_MOVE) {
+
+                Rect frame = get(Layout.Frame, Rect.class);
+                if (frame != null && event.getX() >= 0 && event.getX() < frame.size.width
+                        && event.getY() >= 0 && event.getY() < frame.size.height) {
+                    setHover(true);
+                } else {
+                    setHover(false);
+                    view().getHandler().removeCallbacks(_longActionRunnable);
+                }
+                return true;
             }
-            return false;
+            else {
+                view().getHandler().removeCallbacks(_longActionRunnable);
+                setHover(false);
+                return true;
+            }
         }
 
         return true;

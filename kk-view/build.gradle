@@ -23,10 +23,10 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:support-v4:24.1.1'
-    //compile "kk:lua:0.0.2@aar"
-    //compile 'kk:observer:0.0.4@aar'
-    compile project(':kk-obs')
-    compile project(':kk-lua')
+    compile "kk:lua:0.0.3@aar"
+    compile 'kk:observer:0.0.4@aar'
+    //compile project(':kk-obs')
+    //compile project(':kk-lua')
 }
 
 apply plugin: 'maven'
@@ -36,7 +36,7 @@ uploadArchives {
         mavenDeployer {
             pom.groupId = "kk"
             pom.artifactId = "view"
-            pom.version = "0.0.1"
+            pom.version = "0.0.2"
             repository(url: RELEASE_REPOSITORY_URL) {
 
             }

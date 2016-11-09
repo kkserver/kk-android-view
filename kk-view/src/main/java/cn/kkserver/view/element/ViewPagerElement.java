@@ -38,12 +38,14 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
     public ViewPagerElement(Context context) {
         super(new ViewPager(context));
         viewPager().setAdapter(_adapter);
+        viewPager().addOnPageChangeListener(_adapter);
         set(Style.Layout,new PagerLayout());
     }
 
     public ViewPagerElement(ViewPager view) {
         super(view);
         view.setAdapter(_adapter);
+        view.addOnPageChangeListener(_adapter);
         set(Style.Layout,new PagerLayout());
     }
 
@@ -132,7 +134,7 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
 
         while(i.hasNext()) {
 
-            i.next();
+            Object object = i.next();
 
             if(p == null) {
                 p = new RowElement();
@@ -143,6 +145,7 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
 
             p.set(Style.Observer,observer);
             p.set(Style.Key, Observer.joinString(keys));
+            p.set(Style.Object,object);
 
             idx ++;
 
@@ -214,7 +217,7 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
         return null;
     }
 
-    private static class ViewPagerElementAdpater extends PagerAdapter {
+    private static class ViewPagerElementAdpater extends PagerAdapter implements ViewPager.OnPageChangeListener{
 
         private final WeakReference<ViewPagerElement> _element;
 
@@ -369,6 +372,36 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
 
             return rowElement;
         }
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+
+            ViewPagerElement e = _element.get();
+
+            if(e != null) {
+
+                ViewPagerElementEvent ev = new ViewPagerElementEvent(e);
+
+                ev.pageIndex = position;
+                ev.pageCount = getCount();
+
+                e.set(Style.PageIndex,position);
+                e.set(Style.PageCount,getCount());
+
+                e.sendEvent(ViewPagerElementEvent.PAGE_CHANGED,ev);
+
+            }
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+
+        }
     }
 
 
@@ -431,6 +464,18 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
             }
 
             return Size.Zero;
+        }
+    }
+
+    public static class ViewPagerElementEvent extends ElementEvent {
+
+        public final static String PAGE_CHANGED = "page.changed";
+
+        public int pageCount;
+        public int pageIndex;
+
+        public ViewPagerElementEvent(Element element) {
+            super(element);
         }
     }
 }

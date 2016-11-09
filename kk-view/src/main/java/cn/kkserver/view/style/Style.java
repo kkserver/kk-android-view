@@ -94,6 +94,8 @@ public class Style extends Object {
 
     public final static Property LongAction = new Property.StringProperty("long-action");
 
+    public final static Property TapAction = new Property.StringProperty("tap-action");
+
     public final static Property Scale =  new Property.FloatProperty("scale");
 
     public final static Property FromX =  new Property.FloatProperty("fromX");
@@ -130,9 +132,13 @@ public class Style extends Object {
 
     public final static Property Gravity = new Property.StringProperty("gravity");
 
-    public final static Property Draggable = new Property.StringProperty("draggable");
+    public final static Property PageCount = new Property.IntegerProperty("pageCount");
 
-    public final static Property Droppable = new Property.StringProperty("droppable");
+    public final static Property PageIndex = new Property.IntegerProperty("pageIndex");
+
+    public final static Property TintColor = new Color.Property("tintColor");
+
+    public final static Property Droppable = new Property.BooleanProperty("droppable");
 
     public final static Property[] Propertys = new Property[]{
             BackgroundColor,
@@ -177,6 +183,7 @@ public class Style extends Object {
             Object,
             Action,
             LongAction,
+            TapAction,
             Scale,
             FromX,
             FromY,
@@ -196,7 +203,9 @@ public class Style extends Object {
             Image,
             Text,
             Gravity,
-            Draggable,
+            PageCount,
+            PageIndex,
+            TintColor,
             Droppable
     };
 

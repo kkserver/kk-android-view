@@ -121,7 +121,7 @@ public class EachElement extends ViewElement implements IObserverElement {
             withObserver = observer.with(keys,object);
 
             p.set(Style.Observer,withObserver);
-
+            p.set(Style.Object,object);
             Element n = p.firstChild();
 
             while(n != null) {

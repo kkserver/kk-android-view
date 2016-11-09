@@ -144,12 +144,14 @@ public class ImageElement extends CanvasElement {
 
         Drawable image = image();
 
-        if(image != null){
+        Rect frame = get(Layout.Frame,Rect.class);
+
+        if(image != null && frame != null){
 
             float imageWidth = image.getIntrinsicWidth();
             float imageHeight = image.getIntrinsicHeight();
-            float width = canvas.getWidth();
-            float height = canvas.getHeight();
+            float width = frame.size.width;
+            float height = frame.size.height;
 
             float radius = get(Style.BorderRadius,KKValue.class,KKValue.Zero).floatValue(width);
 

@@ -19,6 +19,9 @@
     text {
         class: cn.kkserver.view.element.TextElement;
     }
+    page-control {
+        class: cn.kkserver.view.element.PageControlElement;
+    }
     pager {
         class: cn.kkserver.view.element.ViewPagerElement;
     }
