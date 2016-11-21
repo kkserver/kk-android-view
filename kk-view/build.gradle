@@ -25,7 +25,7 @@ dependencies {
     compile 'com.android.support:support-v4:24.1.1'
     compile "kk:core:0.0.5@aar"
     compile "kk:lua:0.0.4@aar"
-    compile 'kk:observer:0.0.5@aar'
+    compile 'kk:observer:0.0.6@aar'
     //compile project(':kk-core')
     //compile project(':kk-obs')
     //compile project(':kk-lua')
