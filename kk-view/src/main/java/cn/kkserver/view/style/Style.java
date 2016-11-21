@@ -3,7 +3,6 @@ package cn.kkserver.view.style;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import cn.kkserver.view.value.KKEdge;
 import cn.kkserver.view.value.KKPoint;
 import cn.kkserver.view.value.KKValue;
@@ -11,7 +10,6 @@ import cn.kkserver.view.element.Layout;
 import cn.kkserver.view.Property;
 import cn.kkserver.view.value.TextAlignment;
 import cn.kkserver.view.value.VerticalAlignment;
-import cn.kkserver.view.element.Element;
 import cn.kkserver.view.value.Color;
 import cn.kkserver.view.value.Font;
 
@@ -84,9 +82,9 @@ public class Style extends Object {
 
     public final static Property Type = new Property.StringProperty("type");
 
-    public final static Property Observer = new Property("observer");
+    public final static Property Observer = new Property.ObserverProperty("observer");
 
-    public final static Property Element = new Property("element");
+    public final static Property WithObserver = new Property.ObserverProperty("with-observer");
 
     public final static Property Object = new Property("object");
 
@@ -137,8 +135,6 @@ public class Style extends Object {
     public final static Property PageIndex = new Property.IntegerProperty("pageIndex");
 
     public final static Property TintColor = new Color.Property("tintColor");
-
-    public final static Property Droppable = new Property.BooleanProperty("droppable");
 
     public final static Property[] Propertys = new Property[]{
             BackgroundColor,
@@ -205,8 +201,7 @@ public class Style extends Object {
             Gravity,
             PageCount,
             PageIndex,
-            TintColor,
-            Droppable
+            TintColor
     };
 
     private final static TreeMap<String,Property> _propertysMap;

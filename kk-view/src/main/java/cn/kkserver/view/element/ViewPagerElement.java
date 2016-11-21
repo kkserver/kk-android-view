@@ -26,7 +26,7 @@ import cn.kkserver.view.value.Size;
  * Created by zhanghailong on 2016/11/1.
  */
 
-public class ViewPagerElement extends ViewElement implements IEditingElement,IObserverElement,IElementCreator {
+public class ViewPagerElement extends ViewElement implements IEditingElement,IElementCreator {
 
     private final ViewPagerElementAdpater _adapter = new ViewPagerElementAdpater(this);
     private boolean _editing;
@@ -48,12 +48,6 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
         view.addOnPageChangeListener(_adapter);
         set(Style.Layout,new PagerLayout());
     }
-
-    @Override
-    protected void onPropertyChanged(Property property, Object value, Object newValue) {
-        super.onPropertyChanged(property,value,newValue);
-    }
-
 
     @Override
     public boolean isEditing() {
@@ -89,36 +83,34 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
         super.onRemoveChildren(element);
     }
 
-    @Override
-    public void obtainObserver(IObserver observer) {
+    private final static Listener<ViewPagerElement> _L = new Listener<ViewPagerElement>() {
 
-        String key = get(Style.Key,String.class);
-        IObserver obs = observer;
-
-        while(key != null && key.startsWith("^") && obs != null) {
-            key = key.substring(1);
-            obs = obs.parent();
+        @Override
+        public void onChanged(IObserver observer, String[] changedKeys, ViewPagerElement weakObject) {
+            weakObject.onValueChanged(observer,observer.get(new String[0]));
         }
 
-        if(key != null && obs != null) {
+    };
 
-            final String[] keys = Observer.keys(key);
+    @Override
+    protected void obtainObserver(IObserver observer) {
 
-            onValueChanged(obs,keys,obs.get(keys));
+    }
 
-            obs.on(keys, new Listener<ViewPagerElement>() {
-                @Override
-                public void onChanged(IObserver observer, String[] changedKeys, ViewPagerElement weakObject) {
-                    if(weakObject != null) {
-                        weakObject.onValueChanged(observer,keys,observer.get(keys));
-                    }
-                }
-            },this);
+    @Override
+    protected void onPropertyChanged(Property property, Object value, Object newValue) {
+        super.onPropertyChanged(property,value,newValue);
 
+        if(property == Style.WithObserver) {
+            IWithObserver withObserver = (IWithObserver) newValue;
+            if(withObserver != null) {
+                _L.onChanged(withObserver,new String[0],this);
+                withObserver.on(new String[0],_L,this);
+            }
         }
     }
 
-    protected void onValueChanged(IObserver observer,String[] baseKeys,Object value) {
+    protected void onValueChanged(IObserver observer,Object value) {
 
         Iterator<Object> i = new ArrayIterator<>(value);
 
@@ -141,10 +133,8 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
                 append(p);
             }
 
-            String[] keys = Observer.join(baseKeys,new String[]{String.valueOf(idx)});
-
             p.set(Style.Observer,observer);
-            p.set(Style.Key, Observer.joinString(keys));
+            p.set(Style.Key, String.valueOf(idx));
             p.set(Style.Object,object);
 
             idx ++;
@@ -173,37 +163,6 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
     }
 
     @Override
-    public void recycleObserver(IObserver observer) {
-
-        IObserver obs = observer;
-
-        while(obs != null) {
-            obs.off(null,null,this);
-            obs = obs.parent();
-        }
-
-        Element p = firstChild();
-
-        while(p != null) {
-
-            if(p instanceof PageElement) {
-
-                IWithObserver withObserver = p.get(Style.Observer,IWithObserver.class);
-
-                if(withObserver != null) {
-                    withObserver.recycle();
-                }
-
-                p.removeProperty(Style.Observer);
-
-            }
-
-            p = p.nextSibling();
-        }
-
-    }
-
-    @Override
     public Element onCreateElement(String name) throws Throwable {
 
         if("page".equals(name)) {
@@ -215,6 +174,27 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
         }
 
         return null;
+    }
+
+    public boolean hasPrevPage() {
+        return viewPager().getCurrentItem()  > 0;
+    }
+
+    public void prevPage(boolean animated) {
+        if(hasPrevPage()) {
+            viewPager().setCurrentItem(viewPager().getCurrentItem() - 1,animated);
+        }
+    }
+
+    public boolean hasNextPage() {
+        int count = _adapter.getCount();
+        return viewPager().getCurrentItem() + 1 < count;
+    }
+
+    public void nextPage(boolean animated) {
+        if(hasNextPage()) {
+            viewPager().setCurrentItem(viewPager().getCurrentItem() + 1,animated);
+        }
     }
 
     private static class ViewPagerElementAdpater extends PagerAdapter implements ViewPager.OnPageChangeListener{
@@ -276,18 +256,11 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
             if(row.element != null) {
 
                 PageElement page = row.element;
-                container.removeView(page.view());
 
-                IWithObserver withObserver = page.get(Style.Observer,IWithObserver.class);
-
-                if(withObserver != null) {
-                    Element.recycleObserver(page,withObserver);
-                    withObserver.recycle();
-                }
-
-                page.removeProperty(Style.Observer);
+                page.set(Style.Observer,null);
 
                 row.element = null;
+
             }
 
         }
@@ -339,25 +312,12 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
 
                 {
 
-                    IWithObserver withObserver = page.get(Style.Observer,IWithObserver.class);
-
-                    if(withObserver != null) {
-                        Element.recycleObserver(page,withObserver);
-                        withObserver.recycle();
-                    }
-
                     IObserver observer = rowElement.get(Style.Observer,IObserver.class);
                     String key = rowElement.get(Style.Key,String.class);
 
-                    if(observer != null && key != null) {
+                    page.set(Style.Key,key);
+                    page.set(Style.Observer,observer);
 
-                        withObserver = observer.with(Observer.keys(key));
-
-                        page.set(Style.Observer,withObserver);
-
-                        Element.obtainObserver(page,withObserver);
-
-                    }
                 }
 
                 View view = page.view();
@@ -385,7 +345,7 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
 
             if(e != null) {
 
-                ViewPagerElementEvent ev = new ViewPagerElementEvent(e);
+                PageElementEvent ev = new PageElementEvent(e);
 
                 ev.pageIndex = position;
                 ev.pageCount = getCount();
@@ -393,7 +353,7 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
                 e.set(Style.PageIndex,position);
                 e.set(Style.PageCount,getCount());
 
-                e.sendEvent(ViewPagerElementEvent.PAGE_CHANGED,ev);
+                e.sendEvent(PageElementEvent.CHANGED,ev);
 
             }
         }
@@ -436,6 +396,18 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
         }
 
         @Override
+        protected void onPropertyChanged(Property property, Object value, Object newValue) {
+
+            if(property == Style.Observer) {
+
+                return ;
+            }
+
+            super.onPropertyChanged(property,value,newValue);
+        }
+
+
+        @Override
         protected Element onCreateCloneElement() {
             return new RowElement();
         }
@@ -467,15 +439,4 @@ public class ViewPagerElement extends ViewElement implements IEditingElement,IOb
         }
     }
 
-    public static class ViewPagerElementEvent extends ElementEvent {
-
-        public final static String PAGE_CHANGED = "page.changed";
-
-        public int pageCount;
-        public int pageIndex;
-
-        public ViewPagerElementEvent(Element element) {
-            super(element);
-        }
-    }
 }

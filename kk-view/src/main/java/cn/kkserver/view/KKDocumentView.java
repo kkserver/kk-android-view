@@ -7,6 +7,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.TreeMap;
+
 import cn.kkserver.view.element.AnimationElement;
 import cn.kkserver.view.element.BodyElement;
 import cn.kkserver.view.element.DocumentElement;
@@ -27,6 +29,7 @@ public class KKDocumentView extends KKView {
     private BodyElement _bodyElement;
     private DocumentElement _documentElement;
     private Size _layoutSize;
+    private final TreeMap<String,Element> _elements = new TreeMap<>();
 
     public KKDocumentView(Context context) {
         super(context);
@@ -67,6 +70,7 @@ public class KKDocumentView extends KKView {
         _bodyElement.set(Style.Width,"100%");
         _bodyElement.set(Style.Height,"100%");
         _layoutSize = null;
+        _elements.clear();
         removeAllViews();
     }
 
@@ -241,11 +245,26 @@ public class KKDocumentView extends KKView {
                 element.set(Style.Animation, anim);
             }
         }
+        else if("id".equals(name)) {
+            _elements.put(value,element);
+        }
         else {
             Property property = Style.get(name);
             if(property != null) {
                 element.set(property,value);
             }
         }
+    }
+
+    public Element elementById(String id) {
+        if(_elements.containsKey(id)) {
+            return _elements.get(id);
+        }
+        return null;
+    }
+
+    public void setNeedsLayout() {
+        _layoutSize = null;
+        requestLayout();
     }
 }

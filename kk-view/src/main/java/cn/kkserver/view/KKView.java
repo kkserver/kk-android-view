@@ -47,7 +47,14 @@ public class KKView extends ViewGroup {
         int width = getDefaultSize(Integer.MAX_VALUE,widthMeasureSpec);
         int height = getDefaultSize(Integer.MAX_VALUE,heightMeasureSpec);
 
-        setMeasuredDimension(width,height);
+        Rect frame = (Rect) getTag(R.id.Frame);
+
+        if(frame != null) {
+            width = frame.size.width;
+            height = frame.size.height;
+        }
+
+        setMeasuredDimension(width, height);
 
         measureChildren(widthMeasureSpec,heightMeasureSpec);
 

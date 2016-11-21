@@ -3,7 +3,7 @@ package cn.kkserver.view.value;
 /**
  * Created by zhanghailong on 16/7/14.
  */
-public class Rect {
+public class Rect implements Cloneable {
 
     public Point origin;
     public Size size;
@@ -36,6 +36,29 @@ public class Rect {
         return origin.y;
     }
 
+    public float centerX() {
+        return origin.x + size.width * 0.5f;
+    }
+
+    public float centerY() {
+        return origin.y + size.height * 0.5f;
+    }
+
+    @Override
+    public int hashCode() {
+        return size.hashCode() ^ origin.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object value) {
+        if(value != null && value instanceof Rect) {
+            Rect v = (Rect) value;
+            return (origin == v.origin || (origin != null && origin.equals(v.origin)))
+                    &&  (size == v.size || (size != null && size.equals(v.size)));
+        }
+        return false;
+    }
+
     public static class Property extends cn.kkserver.view.Property {
 
         public Property(String name) {
@@ -55,4 +78,21 @@ public class Rect {
             return null;
         }
     }
+
+
+    @Override
+    public Object clone() {
+        try {
+            Rect v = (Rect) super.clone();
+            if(origin != null) {
+                v.origin = (Point) origin.clone();
+            }
+            if(size != null) {
+                v.size = (Size) size.clone();
+            }
+            return v;
+        } catch (CloneNotSupportedException e) {}
+        return null;
+    }
+
 }

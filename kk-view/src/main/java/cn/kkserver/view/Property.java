@@ -1,5 +1,8 @@
 package cn.kkserver.view;
 
+import cn.kkserver.observer.IObserver;
+import cn.kkserver.observer.IWithObserver;
+
 /**
  * Created by zhanghailong on 2016/11/1.
  */
@@ -32,6 +35,16 @@ public class Property extends Object implements Comparable{
     public int compareTo(Object value) {
         Property v = (Property) value;
         return name.compareTo(v.name);
+    }
+
+    /**
+     * 影子属性
+     */
+    public static class ReflectProperty extends Property {
+
+        public ReflectProperty(String name) {
+            super(name);
+        }
     }
 
     public static class BooleanProperty extends Property {
@@ -196,6 +209,52 @@ public class Property extends Object implements Comparable{
                 }
 
                 return value.toString();
+
+            }
+
+            return null;
+        }
+    }
+
+    public static class ObserverProperty extends ReflectProperty {
+
+        public ObserverProperty(String name) {
+            super(name);
+        }
+
+        @Override
+        public Object valueOf(Object value) {
+
+            if(value != null) {
+
+                if(value instanceof IObserver) {
+                    return value;
+                }
+
+                return null;
+
+            }
+
+            return null;
+        }
+    }
+
+    public static class WithObserverProperty extends ReflectProperty {
+
+        public WithObserverProperty(String name) {
+            super(name);
+        }
+
+        @Override
+        public Object valueOf(Object value) {
+
+            if(value != null) {
+
+                if(value instanceof IWithObserver) {
+                    return value;
+                }
+
+                return null;
 
             }
 

@@ -3,7 +3,7 @@ package cn.kkserver.view.value;
 /**
  * Created by zhanghailong on 16/7/14.
  */
-public class Size {
+public class Size implements Cloneable {
 
     public int width;
     public int height;
@@ -38,6 +38,28 @@ public class Size {
 
             return null;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return width ^ height;
+    }
+
+    @Override
+    public boolean equals(Object value) {
+        if(value != null && value instanceof Size) {
+            Size v = (Size) value;
+            return v.width == width && v.height == height;
+        }
+        return false;
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {}
+        return null;
     }
 
 }

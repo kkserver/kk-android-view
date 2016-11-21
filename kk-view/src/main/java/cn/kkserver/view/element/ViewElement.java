@@ -16,8 +16,10 @@ import cn.kkserver.view.KK;
 import cn.kkserver.view.KKView;
 import cn.kkserver.view.Property;
 import cn.kkserver.view.R;
+import cn.kkserver.view.anim.Transaction;
 import cn.kkserver.view.style.Style;
 import cn.kkserver.view.value.Color;
+import cn.kkserver.view.value.Rect;
 
 
 /**
@@ -39,20 +41,19 @@ public class ViewElement extends Element {
 
     }
 
-    protected boolean onDragEvent(DragEvent event) {
-
-        ViewElementDragEvent ev = new ViewElementDragEvent(this,event);
-
-        sendEvent(ViewElementDragEvent.DRAG,ev);
-
-        return ev.returnResult;
-    }
-
     public View view() {
         if(_view == null && _weakView != null) {
             return _weakView.get();
         }
         return _view;
+    }
+
+    public ViewGroup viewGroup() {
+        View v = view();
+        if(v != null && v instanceof ViewGroup) {
+            return (ViewGroup) v;
+        }
+        return null;
     }
 
     public ViewElement(View view) {
@@ -119,6 +120,9 @@ public class ViewElement extends Element {
         else if(property == Style.Opacity) {
             @FloatRange(from=0.0, to=1.0) float v = newValue == null ? 1.0f : ((Float) newValue).floatValue();
             view.setAlpha(v);
+            if(value != null) {
+                Transaction.setAlpha(view,(Float) value,newValue == null ? 1.0f : ((Float) newValue).floatValue());
+            }
         }
         else if(property == Style.Scale) {
 
@@ -129,14 +133,34 @@ public class ViewElement extends Element {
                 view.setScaleY(v);
             }
 
+            if(value != null) {
+                Transaction.setScale(view,(Float) value,newValue == null ? 1.0f : ((Float) newValue).floatValue());
+            }
+
         }
         else if(property == Layout.Frame) {
-            view.setTag(R.id.Frame,newValue);
-            view.requestLayout();
+
+            Rect v = (Rect) view.getTag(R.id.Frame);
+            Rect frame = newValue == null ? null : (Rect) ((Rect) newValue).clone();
+
+            if(value != null && v != null && frame != null && ! v.equals(frame)) {
+                Transaction.setFrame(view,v,frame);
+            }
+
+            view.setTag(R.id.Frame,frame);
+
+            if (frame != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                view.setPivotX(frame.size.width * 0.5f);
+                view.setPivotY(frame.size.height * 0.5f);
+            }
+
+            if(v == null || !v.equals(frame)) {
+                view.requestLayout();
+            }
+
         }
         else if(property == Style.Animation) {
-            view.clearAnimation();
-            if(newValue != null ) {
+            if(newValue != null  && !newValue.equals(value) ) {
                 if(newValue instanceof AnimationElement) {
                     view.startAnimation(((AnimationElement) newValue).getAnimation());
                 }
@@ -147,17 +171,12 @@ public class ViewElement extends Element {
                     }
                 }
             }
+            else if(newValue == null) {
+                view.clearAnimation();
+            }
         }
         else if(property == Style.Selected) {
             onStatusChanged();
-        }
-        else if(property == Style.Droppable) {
-            if(newValue != null && (Boolean) newValue) {
-                view.setOnDragListener(new OnCallback(this));
-            }
-            else {
-                view.setOnDragListener(null);
-            }
         }
 
         if(view instanceof IElementView) {
@@ -182,14 +201,28 @@ public class ViewElement extends Element {
     protected void onAddToParent(Element element) {
 
         if(element instanceof ViewElement) {
-            View pp = ((ViewElement) element).view();
-            if(pp instanceof ViewGroup) {
+            ViewGroup pp = ((ViewElement) element).viewGroup();
+            if(pp != null) {
                 View v = view();
                 ViewParent p = v.getParent();
                 if(p != null && p instanceof ViewGroup) {
                     ((ViewGroup)p).removeView(v);
                 }
-                ((ViewGroup)pp).addView(v);
+
+                pp.addView(v);
+
+                Object newValue = get(Style.Animation);
+
+                if(newValue != null) {
+                    if (newValue instanceof AnimationElement) {
+                        v.startAnimation(((AnimationElement) newValue).getAnimation());
+                    } else if (newValue instanceof String) {
+                        Animation anim = DocumentElement.getAnimation(this, (String) newValue);
+                        if (anim != null) {
+                            v.startAnimation(anim);
+                        }
+                    }
+                }
             }
         }
 
@@ -206,7 +239,7 @@ public class ViewElement extends Element {
         }
     }
 
-    private static class OnCallback implements View.OnTouchListener,View.OnDragListener {
+    private static class OnCallback implements View.OnTouchListener{
 
         private WeakReference<ViewElement> _element;
 
@@ -223,16 +256,6 @@ public class ViewElement extends Element {
             return false;
         }
 
-        @Override
-        public boolean onDrag(View v, DragEvent event) {
-            ViewElement e = _element.get();
-            if(e != null) {
-                return e.onDragEvent(event);
-            }
-            return false;
-        }
-
-
     }
 
     public void startDraggable() {
@@ -247,7 +270,7 @@ public class ViewElement extends Element {
             // Starts the drag
             v.startDrag(null,  // the data to be dragged
                     myShadow,  // the drag shadow builder
-                    this,      // no need to use local data
+                    get(Style.Object),      // no need to use local data
                     0          // flags (not currently used, set to 0)
             );
 

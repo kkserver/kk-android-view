@@ -186,6 +186,7 @@ public class ButtonElement extends CanvasElement {
 
         @Override
         public void run() {
+
             ButtonElement e = _element.get();
 
             if(e != null) {

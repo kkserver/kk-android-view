@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 
 import cn.kkserver.view.value.KKValue;
+import cn.kkserver.view.value.Rect;
 
 /**
  * Created by zhanghailong on 2016/11/1.
@@ -57,8 +58,9 @@ public class KKCanvasView extends KKView {
         }
         if((backgroundColor & 0x0ff000000) != 0 ){
 
-            float width = canvas.getWidth();
-            float height = canvas.getHeight();
+            Rect frame = (Rect) getTag(R.id.Frame);
+            float width = frame == null ? canvas.getWidth() : frame.size.width;
+            float height = frame == null ? canvas.getHeight() : frame.size.height;
 
             Paint paint = new Paint();
 
@@ -84,13 +86,13 @@ public class KKCanvasView extends KKView {
 
     protected void onDrawBorder(Canvas canvas){
 
-        float width = canvas.getWidth();
+        Rect frame = (Rect) getTag(R.id.Frame);
+        float width = frame == null ? canvas.getWidth() : frame.size.width;
+        float height = frame == null ? canvas.getHeight() : frame.size.height;
 
         float border = borderWidth != null ? borderWidth.floatValue(width) : 0f;
 
         if(border > 0f && (borderColor & 0x0ff000000) != 0){
-
-            float height = canvas.getHeight();
 
             float radius = borderRadius != null ? borderRadius.floatValue(width) : 0f;
 

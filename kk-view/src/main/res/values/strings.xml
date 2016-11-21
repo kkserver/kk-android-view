@@ -25,6 +25,18 @@
     pager {
         class: cn.kkserver.view.element.ViewPagerElement;
     }
+    hpage {
+        class: cn.kkserver.view.element.HPageElement;
+    }
+    vpage {
+        class: cn.kkserver.view.element.VPageElement;
+    }
+    hscroll {
+        class: cn.kkserver.view.element.HScrollElement;
+    }
+    vscroll {
+        class: cn.kkserver.view.element.VScrollElement;
+    }
     img {
         class: cn.kkserver.view.element.ImageElement;
     }
@@ -34,8 +46,8 @@
     outlet {
         class: cn.kkserver.view.element.OutletElement;
     }
-    each {
-        class: cn.kkserver.view.element.EachElement;
+    foreach {
+        class: cn.kkserver.view.element.ForeachElement;
     }
     with {
         class: cn.kkserver.view.element.WithElement;

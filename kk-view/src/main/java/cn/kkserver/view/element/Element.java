@@ -5,10 +5,13 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import cn.kkserver.observer.IObserver;
+import cn.kkserver.observer.IWithObserver;
+import cn.kkserver.observer.Observer;
 import cn.kkserver.view.Property;
 import cn.kkserver.view.style.Style;
 import cn.kkserver.view.event.Event;
 import cn.kkserver.view.event.EventEmitter;
+import cn.kkserver.view.value.Rect;
 
 /**
  * Created by zhanghailong on 2016/11/1.
@@ -131,7 +134,7 @@ public class Element extends EventEmitter {
     }
 
     public Element afterTo(Element element) {
-        element.after(element);
+        element.after(this);
         return this;
     }
 
@@ -195,6 +198,46 @@ public class Element extends EventEmitter {
         }
     }
 
+    public void exchangeTo(Element element) {
+
+        Element fp = parent();
+        Element tp = element.parent();
+
+        if(fp != null && tp != null) {
+
+            if(fp == tp) {
+                if(nextSibling() == element) {
+                    afterTo(element);
+                }
+                else if(nextSibling() != null){
+                    Element fn = nextSibling();
+                    element.beforeTo(this);
+                    beforeTo(fn);
+                }
+                else {
+                    beforeTo(element);
+                    element.appendTo(this);
+                }
+            }
+            else {
+                Element fn = nextSibling();
+                Element tn = element.nextSibling();
+
+                if (tn != null) {
+                    beforeTo(tn);
+                } else {
+                    appendTo(tp);
+                }
+
+                if (fn != null) {
+                    element.beforeTo(fn);
+                } else {
+                    element.appendTo(fp);
+                }
+            }
+        }
+    }
+
     public void sendEvent(String name, Event event) {
         emit(name, event);
         if(event instanceof ElementEvent && !((ElementEvent) event).isCancelBubble()) {
@@ -207,7 +250,7 @@ public class Element extends EventEmitter {
 
     public Element dispatchEvent(String name, Event event) {
 
-        Element r = this;
+        Element r = null;
 
         Element p = _lastChild;
 
@@ -304,7 +347,7 @@ public class Element extends EventEmitter {
                 }
 
                 for(Property prop : v.propertys()) {
-                    if(prop != Style.Status && prop != Style.Status && prop != Style.InStatus) {
+                    if(prop != Style.Status && prop != Style.Style && prop != Style.InStatus) {
                         set(prop,v.get(prop,status));
                     }
                 }
@@ -343,6 +386,74 @@ public class Element extends EventEmitter {
             }
 
         }
+        else if(property == Style.Observer) {
+
+            IObserver observer = (IObserver) newValue;
+            String key = get(Style.Key,String.class);
+
+            if(key == null) {
+
+                obtainObserver(observer);
+
+            }
+            else {
+
+                IObserver obs = observer;
+
+                if(key.startsWith("~")) {
+                    while(obs.parent() != null) {
+                        obs = obs.parent();
+                    }
+                    key = key.substring(1);
+                }
+                else {
+                    while (key.startsWith("^") && obs != null) {
+                        key = key.substring(1);
+                        obs = obs.parent();
+                    }
+                }
+
+                String[] keys = Observer.keys(key);
+
+                IWithObserver withObserver = get(Style.WithObserver,IWithObserver.class);
+
+                if(obs == null) {
+                    if(withObserver != null) {
+                        withObserver.recycle();
+                    }
+                    set(Style.Object,null);
+                }
+                else {
+                    if(withObserver == null) {
+                        withObserver = obs.with(keys);
+                        set(Style.WithObserver,withObserver);
+                    }
+                    else {
+                        withObserver.obtainObserver(obs,keys);
+                    }
+                    set(Style.Object,withObserver.get(new String[0]));
+                }
+
+                obtainObserver(withObserver);
+
+            }
+        }
+
+    }
+
+    protected void obtainObserver(IObserver observer) {
+
+        Element e = firstChild();
+
+        while (e != null) {
+            if(e instanceof IReflectElement) {
+
+            }
+            else {
+                e.set(Style.Observer, observer);
+            }
+            e = e.nextSibling();
+        }
 
     }
 
@@ -351,7 +462,12 @@ public class Element extends EventEmitter {
         Element v = onCreateCloneElement();
 
         for(Property property : propertys()) {
-            v.set(property, get(property));
+            if(property instanceof Property.ReflectProperty) {
+
+            }
+            else {
+                v.set(property, get(property));
+            }
         }
 
         Element p = firstChild();
@@ -372,33 +488,4 @@ public class Element extends EventEmitter {
         return new Element();
     }
 
-
-    public static void obtainObserver(Element element,IObserver observer) {
-
-        if(element instanceof IObserverElement) {
-            ((IObserverElement) element).obtainObserver(observer);
-        }
-        else {
-            Element p = element.firstChild();
-            while(p != null) {
-                obtainObserver(p,observer);
-                p = p.nextSibling();
-            }
-        }
-    }
-
-    public static void recycleObserver(Element element, IObserver observer) {
-
-        if(element instanceof IObserverElement) {
-            ((IObserverElement) element).recycleObserver(observer);
-        }
-        else {
-            Element p = element.firstChild();
-            while(p != null) {
-                recycleObserver(p,observer);
-                p = p.nextSibling();
-            }
-        }
-
-    }
 }

@@ -7,6 +7,7 @@ import android.graphics.RectF;
 import cn.kkserver.view.style.Style;
 import cn.kkserver.view.value.Color;
 import cn.kkserver.view.value.KKValue;
+import cn.kkserver.view.value.Rect;
 
 /**
  * Created by zhanghailong on 2016/11/7.
@@ -31,8 +32,10 @@ public class PaintElement extends Element implements IElementCreator {
 
         Path path = new Path();
 
-        float width = canvas.getWidth();
-        float height = canvas.getHeight();
+        Rect frame = parent().get(Layout.Frame,Rect.class);
+
+        float width = frame == null ? canvas.getWidth() : frame.size.width;
+        float height = frame == null ? canvas.getHeight() : frame.size.height;
 
         Element e = firstChild();
 

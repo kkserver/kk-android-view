@@ -2,10 +2,9 @@ package cn.kkserver.view.element;
 
 import java.util.Map;
 import java.util.TreeMap;
-
 import cn.kkserver.observer.IObserver;
+import cn.kkserver.observer.IWithObserver;
 import cn.kkserver.observer.Listener;
-import cn.kkserver.observer.Observer;
 import cn.kkserver.view.Property;
 import cn.kkserver.view.script.IScriptFunction;
 import cn.kkserver.view.style.Style;
@@ -14,7 +13,7 @@ import cn.kkserver.view.style.Style;
  * Created by zhanghailong on 2016/11/4.
  */
 
-public class OutletElement extends ScriptElement implements IObserverElement {
+public class OutletElement extends ScriptElement {
 
     public final static Object Done = new Object();
 
@@ -23,14 +22,14 @@ public class OutletElement extends ScriptElement implements IObserverElement {
 
     }
 
-    protected Object onValue(Element element,IObserver observer,IObserver obs,String[] keys,Object value) {
+    protected Object onValue(Element element,IObserver observer,IObserver obs,String key,Object value) {
 
         if(hasScriptFunction()) {
 
             Map<String, Object> object = new TreeMap<>();
 
             object.put("value", value);
-            object.put("key", Observer.joinString(keys));
+            object.put("key", key);
             object.put("observer",observer);
             object.put("obs",obs);
             object.put("element",element);
@@ -45,63 +44,50 @@ public class OutletElement extends ScriptElement implements IObserverElement {
         return value;
     }
 
-    @Override
-    public void obtainObserver(final IObserver observer) {
+    private final static Listener<OutletElement> _L = new Listener<OutletElement>() {
 
-        String key = get(Style.Key,String.class);
-        String property = get(Style.Property,String.class);
-
-        IObserver obs = observer;
-
-        while(key.startsWith("^") && obs != null) {
-            key = key.substring(1);
-            obs = obs.parent();
+        @Override
+        public void onChanged(IObserver observer, String[] changedKeys, OutletElement weakObject) {
+            weakObject.onValueChanged(observer,new String[0],observer.get(new String[0]));
         }
 
-        if(key != null && property != null && obs != null) {
+    };
 
-            final Property prop = Style.get(property);
+    @Override
+    protected void onPropertyChanged(Property property, Object value, Object newValue) {
+        super.onPropertyChanged(property,value,newValue);
+
+        if(property == Style.WithObserver) {
+            IWithObserver withObserver = (IWithObserver) newValue;
+            if(withObserver != null) {
+                _L.onChanged(withObserver,new String[0],this);
+                withObserver.on(new String[0],_L,this);
+            }
+        }
+    }
+
+    protected void onValueChanged(IObserver observer,String[] baseKeys, Object value) {
+
+        String property = get(Style.Property,String.class);
+
+        if(property != null) {
+
+            Property prop = Style.get(property);
 
             if(prop != null) {
 
-                final String[] keys = Observer.keys(key);
-                final Element element = parent();
+                Element p = parent();
 
-                if(element != null && obs != null) {
+                if(p != null) {
 
-                    Object v = onValue(element,observer,obs,keys,obs.get(keys));
+                    Object v = onValue(p,get(Style.Observer,IObserver.class),observer,get(Style.Key,String.class),value);
 
                     if(v != Done) {
-                        element.set(prop, v);
+                        p.set(prop, v);
                     }
 
-                    obs.on(keys, new Listener<OutletElement>() {
-                        @Override
-                        public void onChanged(IObserver obs, String[] changedKeys, OutletElement outlet) {
-                            if(outlet != null) {
-                                Object v = outlet.onValue(element,observer,obs,keys, obs.get(keys));
-                                if(v != Done) {
-                                    element.set(prop,v);
-                                }
-                            }
-                        }
-                    },this);
-
                 }
-
             }
-        }
-
-    }
-
-    @Override
-    public void recycleObserver(IObserver observer) {
-
-        IObserver obs = observer;
-
-        while(obs != null) {
-            obs.off(null,null,this);
-            obs = obs.parent();
         }
     }
 
