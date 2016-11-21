@@ -18,6 +18,7 @@ import cn.kkserver.view.event.Event;
 import cn.kkserver.view.event.EventFunction;
 import cn.kkserver.view.KK;
 import cn.kkserver.view.KKDocumentView;
+import cn.kkserver.view.style.Style;
 import cn.kkserver.view.value.KKValue;
 
 public class MainActivity extends Activity {
@@ -38,7 +39,7 @@ public class MainActivity extends Activity {
         try {
             documentView = ((KKDocumentView) findViewById(R.id.activity_main));
             documentView.load(R.xml.main);
-            Element.obtainObserver(documentView.bodyElement(),observer);
+            documentView.bodyElement().set(Style.Observer,observer);
             documentView.bodyElement().on("action.editing", new EventFunction<IObserver>() {
 
                 @Override
